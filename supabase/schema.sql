@@ -1,0 +1,2 @@
+-- Schéma de base de données CRM Sales
+-- Sera implémenté dans la tâche 0.3

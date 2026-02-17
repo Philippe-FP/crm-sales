@@ -1,0 +1,2 @@
+-- Données de test CRM Sales
+-- Sera implémenté dans la tâche 0.4
