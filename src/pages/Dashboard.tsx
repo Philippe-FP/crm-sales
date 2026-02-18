@@ -1,3 +1,8 @@
 export default function Dashboard() {
-  return <div>Dashboard</div>
+  return (
+    <div>
+      <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+      <p className="mt-2 text-gray-600">Vue d'ensemble de l'activité commerciale.</p>
+    </div>
+  )
 }
