@@ -7,6 +7,8 @@ import EntrepriseNewPage from './pages/EntrepriseNewPage'
 import EntrepriseEditPage from './pages/EntrepriseEditPage'
 import ContactsPage from './pages/ContactsPage'
 import ContactDetailPage from './pages/ContactDetailPage'
+import ContactNewPage from './pages/ContactNewPage'
+import ContactEditPage from './pages/ContactEditPage'
 import OpportunitesPage from './pages/OpportunitesPage'
 import OpportuniteDetailPage from './pages/OpportuniteDetailPage'
 import PipelinePage from './pages/PipelinePage'
@@ -27,7 +29,9 @@ export default function App() {
           <Route path="entreprises/:id/edit" element={<EntrepriseEditPage />} />
 
           <Route path="contacts" element={<ContactsPage />} />
+          <Route path="contacts/new" element={<ContactNewPage />} />
           <Route path="contacts/:id" element={<ContactDetailPage />} />
+          <Route path="contacts/:id/edit" element={<ContactEditPage />} />
 
           <Route path="opportunites" element={<OpportunitesPage />} />
           <Route path="opportunites/:id" element={<OpportuniteDetailPage />} />
