@@ -103,6 +103,12 @@ export default function EntrepriseDetailPage() {
       {/* Header */}
       <div className="mt-4 flex items-start justify-between">
         <h1 className="text-2xl font-bold text-gray-900">{entreprise.nom}</h1>
+        <Link
+          to={`/entreprises/${id}/edit`}
+          className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+        >
+          Modifier
+        </Link>
       </div>
 
       {/* Info grid */}
