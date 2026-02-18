@@ -1,3 +1,8 @@
 export default function ContactsPage() {
-  return <div>Contacts</div>
+  return (
+    <div>
+      <h1 className="text-2xl font-bold text-gray-900">Contacts</h1>
+      <p className="mt-2 text-gray-600">Répertoire des contacts commerciaux.</p>
+    </div>
+  )
 }
