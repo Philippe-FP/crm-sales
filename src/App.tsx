@@ -3,6 +3,8 @@ import Layout from './components/layout/Layout'
 import Dashboard from './pages/Dashboard'
 import EntreprisesPage from './pages/EntreprisesPage'
 import EntrepriseDetailPage from './pages/EntrepriseDetailPage'
+import EntrepriseNewPage from './pages/EntrepriseNewPage'
+import EntrepriseEditPage from './pages/EntrepriseEditPage'
 import ContactsPage from './pages/ContactsPage'
 import ContactDetailPage from './pages/ContactDetailPage'
 import OpportunitesPage from './pages/OpportunitesPage'
@@ -20,7 +22,9 @@ export default function App() {
           <Route index element={<Dashboard />} />
 
           <Route path="entreprises" element={<EntreprisesPage />} />
+          <Route path="entreprises/new" element={<EntrepriseNewPage />} />
           <Route path="entreprises/:id" element={<EntrepriseDetailPage />} />
+          <Route path="entreprises/:id/edit" element={<EntrepriseEditPage />} />
 
           <Route path="contacts" element={<ContactsPage />} />
           <Route path="contacts/:id" element={<ContactDetailPage />} />

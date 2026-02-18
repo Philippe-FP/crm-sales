@@ -98,6 +98,12 @@ export default function EntreprisesPage() {
             {loading ? 'Chargement…' : `${sorted.length} entreprise${sorted.length > 1 ? 's' : ''}`}
           </p>
         </div>
+        <Link
+          to="/entreprises/new"
+          className="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700"
+        >
+          + Nouvelle entreprise
+        </Link>
       </div>
 
       {error && (
