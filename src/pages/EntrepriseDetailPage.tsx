@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
-import { getEntrepriseById } from '../services/entreprises'
+import { useParams, Link, useNavigate } from 'react-router-dom'
+import { getEntrepriseById, deleteEntreprise } from '../services/entreprises'
 import { getContactsByEntreprise } from '../services/contacts'
 import { getOpportunitesByEntreprise } from '../services/opportunites'
 import { getActivitesByEntreprise } from '../services/activites'
@@ -35,12 +35,15 @@ const typeLabels: Record<TypeActivite, string> = {
 
 export default function EntrepriseDetailPage() {
   const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
   const [entreprise, setEntreprise] = useState<Entreprise | null>(null)
   const [contacts, setContacts] = useState<Contact[]>([])
   const [opportunites, setOpportunites] = useState<Opportunite[]>([])
   const [activites, setActivites] = useState<Activite[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -103,13 +106,55 @@ export default function EntrepriseDetailPage() {
       {/* Header */}
       <div className="mt-4 flex items-start justify-between">
         <h1 className="text-2xl font-bold text-gray-900">{entreprise.nom}</h1>
-        <Link
-          to={`/entreprises/${id}/edit`}
-          className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-        >
-          Modifier
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            to={`/entreprises/${id}/edit`}
+            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          >
+            Modifier
+          </Link>
+          <button
+            onClick={() => setConfirmDelete(true)}
+            className="rounded-lg border border-red-300 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+          >
+            Supprimer
+          </button>
+        </div>
       </div>
+
+      {/* Delete confirmation */}
+      {confirmDelete && (
+        <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4">
+          <p className="text-sm text-red-800">
+            Supprimer <strong>{entreprise.nom}</strong> et toutes ses opportunités associées ? Cette action est irréversible.
+          </p>
+          <div className="mt-3 flex items-center gap-3">
+            <button
+              onClick={async () => {
+                setDeleting(true)
+                try {
+                  await deleteEntreprise(id!)
+                  navigate('/entreprises')
+                } catch (err) {
+                  setError(err instanceof Error ? err.message : 'Erreur lors de la suppression')
+                  setDeleting(false)
+                  setConfirmDelete(false)
+                }
+              }}
+              disabled={deleting}
+              className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+            >
+              {deleting ? 'Suppression…' : 'Confirmer la suppression'}
+            </button>
+            <button
+              onClick={() => setConfirmDelete(false)}
+              className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              Annuler
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Info grid */}
       <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
