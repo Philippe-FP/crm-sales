@@ -319,6 +319,3 @@ function Section({ title, count, className, children }: { title: string; count: 
   )
 }
 
-function EmptyState({ text }: { text: string }) {
-  return <p className="text-sm text-gray-500 py-4">{text}</p>
-}
