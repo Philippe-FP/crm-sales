@@ -1,10 +1,11 @@
 import { useEffect, useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { getActivites } from '../services/activites'
+import { getActivites, createActivite, updateActivite } from '../services/activites'
 import { getEntreprises } from '../services/entreprises'
 import { getContacts } from '../services/contacts'
 import { getOpportunites } from '../services/opportunites'
-import type { Activite, Entreprise, Contact, Opportunite, TypeActivite } from '../types'
+import ActiviteForm from '../components/activites/ActiviteForm'
+import type { Activite, ActiviteInsert, Entreprise, Contact, Opportunite, TypeActivite } from '../types'
 
 type StatutFilter = '' | 'a_faire' | 'fait'
 
@@ -43,6 +44,8 @@ export default function ActivitesPage() {
   const [typeFilter, setTypeFilter] = useState<TypeActivite | ''>('')
   const [statutFilter, setStatutFilter] = useState<StatutFilter>('')
   const [periodeFilter, setPeriodeFilter] = useState<'' | 'passe' | 'aujourdhui' | 'semaine' | 'mois'>('')
+  const [showCreateForm, setShowCreateForm] = useState(false)
+  const [editingActivite, setEditingActivite] = useState<Activite | null>(null)
 
   useEffect(() => {
     let cancelled = false
@@ -69,6 +72,19 @@ export default function ActivitesPage() {
     load()
     return () => { cancelled = true }
   }, [])
+
+  async function handleCreate(data: ActiviteInsert) {
+    const created = await createActivite(data)
+    setActivites((prev) => [created, ...prev])
+    setShowCreateForm(false)
+  }
+
+  async function handleEdit(data: ActiviteInsert) {
+    if (!editingActivite) return
+    const updated = await updateActivite(editingActivite.id, data)
+    setActivites((prev) => prev.map((a) => (a.id === updated.id ? updated : a)))
+    setEditingActivite(null)
+  }
 
   const filtered = useMemo(() => {
     let list = activites
@@ -134,9 +150,8 @@ export default function ActivitesPage() {
           </p>
         </div>
         <button
+          onClick={() => setShowCreateForm(true)}
           className="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700"
-          disabled
-          title="À venir (tâche 6.2)"
         >
           + Nouvelle activité
         </button>
@@ -213,7 +228,7 @@ export default function ActivitesPage() {
                 </tr>
               ) : (
                 filtered.map((a) => (
-                  <tr key={a.id} className="hover:bg-gray-50 transition-colors">
+                  <tr key={a.id} className="hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => setEditingActivite(a)}>
                     <td className="whitespace-nowrap px-4 py-3 text-sm">
                       <span className="mr-1.5" title={typeLabels[a.type]}>{typeIcons[a.type]}</span>
                       <span className="text-gray-700">{typeLabels[a.type]}</span>
@@ -270,6 +285,35 @@ export default function ActivitesPage() {
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
           </svg>
           Chargement…
+        </div>
+      )}
+
+      {/* Modale de création */}
+      {showCreateForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl max-h-[90vh] overflow-y-auto">
+            <h2 className="mb-4 text-lg font-semibold text-gray-900">Nouvelle activité</h2>
+            <ActiviteForm
+              onSubmit={handleCreate}
+              onCancel={() => setShowCreateForm(false)}
+              submitLabel="Créer"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Modale de modification */}
+      {editingActivite && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl max-h-[90vh] overflow-y-auto">
+            <h2 className="mb-4 text-lg font-semibold text-gray-900">Modifier l'activité</h2>
+            <ActiviteForm
+              initial={editingActivite}
+              onSubmit={handleEdit}
+              onCancel={() => setEditingActivite(null)}
+              submitLabel="Enregistrer"
+            />
+          </div>
         </div>
       )}
     </div>
