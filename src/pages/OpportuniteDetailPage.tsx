@@ -5,7 +5,8 @@ import { getEntrepriseById } from '../services/entreprises'
 import { getContactById } from '../services/contacts'
 import { getActivitesByOpportunite } from '../services/activites'
 import OpportuniteForm from '../components/opportunites/OpportuniteForm'
-import type { Opportunite, Entreprise, Contact, Activite, StatutOpportunite, TypeActivite, OpportuniteInsert } from '../types'
+import Timeline from '../components/activites/Timeline'
+import type { Opportunite, Entreprise, Contact, Activite, StatutOpportunite, OpportuniteInsert } from '../types'
 
 function formatEuros(v: number | null): string {
   if (v == null) return '—'
@@ -43,14 +44,6 @@ const allStatuts: StatutOpportunite[] = [
   'gagne',
   'perdu',
 ]
-
-const typeLabels: Record<TypeActivite, string> = {
-  appel: 'Appel',
-  email: 'Email',
-  reunion: 'Réunion',
-  note: 'Note',
-  tache: 'Tâche',
-}
 
 export default function OpportuniteDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -275,33 +268,12 @@ export default function OpportuniteDetailPage() {
 
       {/* Activités */}
       <Section title="Activités" count={activites.length} className="mt-10 mb-8">
-        {activites.length === 0 ? (
-          <EmptyState text="Aucune activité liée." />
-        ) : (
-          <div className="space-y-3">
-            {activites.map((a) => (
-              <div
-                key={a.id}
-                className={`rounded-lg border p-4 ${a.est_fait ? 'border-gray-200 bg-gray-50' : 'border-gray-200 bg-white'}`}
-              >
-                <div className="flex items-center gap-3">
-                  <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                    a.est_fait ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
-                  }`}>
-                    {typeLabels[a.type]}
-                  </span>
-                  <span className={`text-sm font-medium ${a.est_fait ? 'text-gray-500 line-through' : 'text-gray-900'}`}>
-                    {a.sujet}
-                  </span>
-                  {a.date_echeance && (
-                    <span className="ml-auto text-xs text-gray-500">{formatDate(a.date_echeance)}</span>
-                  )}
-                </div>
-                {a.description && <p className="mt-2 text-sm text-gray-600">{a.description}</p>}
-              </div>
-            ))}
-          </div>
-        )}
+        <Timeline
+          activites={activites}
+          onActiviteUpdated={(updated) =>
+            setActivites((prev) => prev.map((a) => (a.id === updated.id ? updated : a)))
+          }
+        />
       </Section>
 
       {/* Modale de modification */}
@@ -347,6 +319,3 @@ function Section({ title, count, className, children }: { title: string; count: 
   )
 }
 
-function EmptyState({ text }: { text: string }) {
-  return <p className="text-sm text-gray-500 py-4">{text}</p>
-}
