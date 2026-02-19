@@ -4,7 +4,8 @@ import { getEntrepriseById, deleteEntreprise } from '../services/entreprises'
 import { getContactsByEntreprise } from '../services/contacts'
 import { getOpportunitesByEntreprise } from '../services/opportunites'
 import { getActivitesByEntreprise } from '../services/activites'
-import type { Entreprise, Contact, Opportunite, Activite, StatutOpportunite, TypeActivite } from '../types'
+import Timeline from '../components/activites/Timeline'
+import type { Entreprise, Contact, Opportunite, Activite, StatutOpportunite } from '../types'
 
 function formatEuros(v: number | null): string {
   if (v == null) return '—'
@@ -23,14 +24,6 @@ const statutColors: Record<StatutOpportunite, string> = {
   negociation: 'bg-amber-100 text-amber-700',
   gagne: 'bg-green-100 text-green-700',
   perdu: 'bg-red-100 text-red-700',
-}
-
-const typeLabels: Record<TypeActivite, string> = {
-  appel: 'Appel',
-  email: 'Email',
-  reunion: 'Réunion',
-  note: 'Note',
-  tache: 'Tâche',
 }
 
 export default function EntrepriseDetailPage() {
@@ -247,37 +240,12 @@ export default function EntrepriseDetailPage() {
 
       {/* Activités */}
       <Section title="Activités" count={activites.length} className="mt-10 mb-8">
-        {activites.length === 0 ? (
-          <EmptyState text="Aucune activité." />
-        ) : (
-          <div className="space-y-3">
-            {activites.map((a) => (
-              <div
-                key={a.id}
-                className={`rounded-lg border p-4 ${a.est_fait ? 'border-gray-200 bg-gray-50' : 'border-gray-200 bg-white'}`}
-              >
-                <div className="flex items-center gap-3">
-                  <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                    a.est_fait ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
-                  }`}>
-                    {typeLabels[a.type]}
-                  </span>
-                  <span className={`text-sm font-medium ${a.est_fait ? 'text-gray-500 line-through' : 'text-gray-900'}`}>
-                    {a.sujet}
-                  </span>
-                  {a.date_echeance && (
-                    <span className="ml-auto text-xs text-gray-500">
-                      {formatDate(a.date_echeance)}
-                    </span>
-                  )}
-                </div>
-                {a.description && (
-                  <p className="mt-2 text-sm text-gray-600">{a.description}</p>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+        <Timeline
+          activites={activites}
+          onActiviteUpdated={(updated) =>
+            setActivites((prev) => prev.map((a) => (a.id === updated.id ? updated : a)))
+          }
+        />
       </Section>
     </div>
   )
