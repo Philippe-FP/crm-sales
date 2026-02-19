@@ -1,8 +1,9 @@
 import { useEffect, useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { getOpportunites } from '../services/opportunites'
+import { getOpportunites, createOpportunite } from '../services/opportunites'
 import { getEntreprises } from '../services/entreprises'
-import type { Opportunite, Entreprise, StatutOpportunite } from '../types'
+import OpportuniteForm from '../components/opportunites/OpportuniteForm'
+import type { Opportunite, Entreprise, StatutOpportunite, OpportuniteInsert } from '../types'
 
 type SortKey = 'titre' | 'entreprise' | 'montant' | 'statut' | 'probabilite' | 'date_cloture_prevue'
 type SortDir = 'asc' | 'desc'
@@ -57,6 +58,7 @@ export default function OpportunitesPage() {
   const [statutFilter, setStatutFilter] = useState<StatutOpportunite | ''>('')
   const [sortKey, setSortKey] = useState<SortKey>('titre')
   const [sortDir, setSortDir] = useState<SortDir>('asc')
+  const [showForm, setShowForm] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -76,6 +78,12 @@ export default function OpportunitesPage() {
     load()
     return () => { cancelled = true }
   }, [])
+
+  async function handleCreate(data: OpportuniteInsert) {
+    const created = await createOpportunite(data)
+    setOpportunites((prev) => [created, ...prev])
+    setShowForm(false)
+  }
 
   function entrepriseName(id: string): string {
     return entreprises.get(id)?.nom ?? ''
@@ -156,9 +164,8 @@ export default function OpportunitesPage() {
           </p>
         </div>
         <button
+          onClick={() => setShowForm(true)}
           className="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700"
-          disabled
-          title="À venir (tâche 5.2)"
         >
           + Nouvelle opportunité
         </button>
@@ -264,6 +271,20 @@ export default function OpportunitesPage() {
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
           </svg>
           Chargement…
+        </div>
+      )}
+
+      {/* Modale de création */}
+      {showForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl max-h-[90vh] overflow-y-auto">
+            <h2 className="mb-4 text-lg font-semibold text-gray-900">Nouvelle opportunité</h2>
+            <OpportuniteForm
+              onSubmit={handleCreate}
+              onCancel={() => setShowForm(false)}
+              submitLabel="Créer"
+            />
+          </div>
         </div>
       )}
     </div>
