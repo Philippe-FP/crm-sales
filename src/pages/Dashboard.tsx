@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { getEntreprises } from '../services/entreprises'
 import { getContacts } from '../services/contacts'
 import { getOpportunites } from '../services/opportunites'
 import { getActivites } from '../services/activites'
-import type { Opportunite, Activite } from '../types'
+import { updateActivite } from '../services/activites'
+import type { Opportunite, Activite, TypeActivite } from '../types'
 
 interface DashboardStats {
   entreprises: number
@@ -14,6 +16,23 @@ interface DashboardStats {
 }
 
 const STATUTS_EN_COURS = new Set(['prospection', 'qualification', 'proposition', 'negociation'])
+
+const statutLabels: Record<string, string> = {
+  prospection: 'Prospection',
+  qualification: 'Qualification',
+  proposition: 'Proposition',
+  negociation: 'Négociation',
+  gagne: 'Gagné',
+  perdu: 'Perdu',
+}
+
+const typeLabels: Record<TypeActivite, string> = {
+  appel: 'Appel',
+  email: 'Email',
+  reunion: 'Réunion',
+  note: 'Note',
+  tache: 'Tâche',
+}
 
 function computeStats(
   entreprisesCount: number,
@@ -51,8 +70,15 @@ function formatEuros(value: number): string {
   }).format(value)
 }
 
+function formatDate(d: string | null): string {
+  if (!d) return '—'
+  return new Date(d).toLocaleDateString('fr-FR')
+}
+
 export default function Dashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null)
+  const [prochainesActivites, setProchainesActivites] = useState<Activite[]>([])
+  const [dernieresOpportunites, setDernieresOpportunites] = useState<Opportunite[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -69,6 +95,20 @@ export default function Dashboard() {
         ])
         if (!cancelled) {
           setStats(computeStats(entreprises.length, contacts.length, opportunites, activites))
+
+          // 10 prochaines activités à faire (non faites, triées par date d'échéance croissante)
+          const today = new Date().toISOString().slice(0, 10)
+          const prochaines = activites
+            .filter((a) => !a.est_fait && a.date_echeance && a.date_echeance >= today)
+            .sort((a, b) => (a.date_echeance ?? '').localeCompare(b.date_echeance ?? ''))
+            .slice(0, 10)
+          setProchainesActivites(prochaines)
+
+          // 5 dernières opportunités modifiées
+          const dernieres = [...opportunites]
+            .sort((a, b) => b.updated_at.localeCompare(a.updated_at))
+            .slice(0, 5)
+          setDernieresOpportunites(dernieres)
         }
       } catch (err) {
         if (!cancelled) {
@@ -82,6 +122,13 @@ export default function Dashboard() {
     load()
     return () => { cancelled = true }
   }, [])
+
+  async function toggleActiviteFait(activite: Activite) {
+    const updated = await updateActivite(activite.id, { est_fait: !activite.est_fait })
+    setProchainesActivites((prev) =>
+      prev.map((a) => (a.id === updated.id ? updated : a)).filter((a) => !a.est_fait),
+    )
+  }
 
   return (
     <div>
@@ -103,40 +150,154 @@ export default function Dashboard() {
           Chargement...
         </div>
       ) : stats && (
-        <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard
-            label="Entreprises"
-            value={stats.entreprises.toString()}
-            color="blue"
-            icon={<BuildingIcon />}
-          />
-          <StatCard
-            label="Contacts"
-            value={stats.contacts.toString()}
-            color="green"
-            icon={<UsersIcon />}
-          />
-          <StatCard
-            label="Opportunités en cours"
-            value={stats.opportunitesEnCours.toString()}
-            color="amber"
-            icon={<CurrencyIcon />}
-          />
-          <StatCard
-            label="Montant pondéré"
-            value={formatEuros(stats.montantPondere)}
-            color="purple"
-            icon={<ChartIcon />}
-          />
-          <StatCard
-            label="Activités à venir"
-            value={stats.activitesAVenir.toString()}
-            color="rose"
-            icon={<CalendarIcon />}
-          />
-        </div>
+        <>
+          {/* Stat cards */}
+          <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <StatCard
+              label="Entreprises"
+              value={stats.entreprises.toString()}
+              color="blue"
+              icon={<BuildingIcon />}
+            />
+            <StatCard
+              label="Contacts"
+              value={stats.contacts.toString()}
+              color="green"
+              icon={<UsersIcon />}
+            />
+            <StatCard
+              label="Opportunités en cours"
+              value={stats.opportunitesEnCours.toString()}
+              color="amber"
+              icon={<CurrencyIcon />}
+            />
+            <StatCard
+              label="Montant pondéré"
+              value={formatEuros(stats.montantPondere)}
+              color="purple"
+              icon={<ChartIcon />}
+            />
+            <StatCard
+              label="Activités à venir"
+              value={stats.activitesAVenir.toString()}
+              color="rose"
+              icon={<CalendarIcon />}
+            />
+          </div>
+
+          {/* Sections détail */}
+          <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-2">
+            {/* 10 prochaines activités */}
+            <div className="rounded-xl border border-gray-200 bg-white p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-gray-900">Prochaines activités</h2>
+                <Link to="/activites" className="text-sm text-blue-600 hover:text-blue-800">
+                  Tout voir
+                </Link>
+              </div>
+              {prochainesActivites.length === 0 ? (
+                <p className="text-sm text-gray-500 py-4">Aucune activité à venir.</p>
+              ) : (
+                <ul className="divide-y divide-gray-100">
+                  {prochainesActivites.map((a) => (
+                    <li key={a.id} className="flex items-center gap-3 py-3">
+                      <button
+                        onClick={() => toggleActiviteFait(a)}
+                        title="Marquer comme fait"
+                        className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded border border-gray-300 bg-white text-xs text-transparent transition-colors hover:border-green-400 hover:text-green-400"
+                      >
+                        ✓
+                      </button>
+                      <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
+                        a.est_fait ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
+                      }`}>
+                        {typeLabels[a.type]}
+                      </span>
+                      <span className="flex-1 truncate text-sm text-gray-900">{a.sujet}</span>
+                      <span className="text-xs text-gray-500">{formatDate(a.date_echeance)}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            {/* 5 dernières opportunités modifiées */}
+            <div className="rounded-xl border border-gray-200 bg-white p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-gray-900">Dernières opportunités</h2>
+                <Link to="/opportunites" className="text-sm text-blue-600 hover:text-blue-800">
+                  Tout voir
+                </Link>
+              </div>
+              {dernieresOpportunites.length === 0 ? (
+                <p className="text-sm text-gray-500 py-4">Aucune opportunité.</p>
+              ) : (
+                <ul className="divide-y divide-gray-100">
+                  {dernieresOpportunites.map((o) => (
+                    <li key={o.id} className="py-3">
+                      <Link to={`/opportunites/${o.id}`} className="block hover:bg-gray-50 -mx-2 px-2 py-1 rounded">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-gray-900 truncate">{o.titre}</span>
+                          <span className="text-sm font-semibold text-gray-700">
+                            {o.montant != null ? formatEuros(o.montant) : '—'}
+                          </span>
+                        </div>
+                        <div className="mt-1 flex items-center gap-2">
+                          <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
+                            o.statut === 'gagne'
+                              ? 'bg-green-100 text-green-700'
+                              : o.statut === 'perdu'
+                                ? 'bg-red-100 text-red-700'
+                                : 'bg-blue-100 text-blue-700'
+                          }`}>
+                            {statutLabels[o.statut]}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            modifié le {formatDate(o.updated_at)}
+                          </span>
+                        </div>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+
+          {/* Liens rapides */}
+          <div className="mt-8">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">Liens rapides</h2>
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+              <QuickLink to="/entreprises/new" label="Nouvelle entreprise" icon={<BuildingIcon />} color="blue" />
+              <QuickLink to="/contacts/new" label="Nouveau contact" icon={<UsersIcon />} color="green" />
+              <QuickLink to="/opportunites/new" label="Nouvelle opportunité" icon={<CurrencyIcon />} color="amber" />
+              <QuickLink to="/activites/new" label="Nouvelle activité" icon={<CalendarIcon />} color="rose" />
+            </div>
+          </div>
+        </>
       )}
     </div>
+  )
+}
+
+/* ── QuickLink ── */
+
+const quickLinkColors: Record<string, string> = {
+  blue: 'border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100',
+  green: 'border-green-200 bg-green-50 text-green-700 hover:bg-green-100',
+  amber: 'border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100',
+  rose: 'border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100',
+}
+
+function QuickLink({ to, label, icon, color }: { to: string; label: string; icon: React.ReactNode; color: string }) {
+  return (
+    <Link
+      to={to}
+      className={`flex flex-col items-center gap-2 rounded-xl border p-4 text-sm font-medium transition-colors ${quickLinkColors[color] ?? quickLinkColors.blue}`}
+    >
+      {icon}
+      {label}
+    </Link>
   )
 }
 
