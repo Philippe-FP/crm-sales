@@ -5,7 +5,7 @@ import { getEntreprises } from '../services/entreprises'
 import OpportuniteForm from '../components/opportunites/OpportuniteForm'
 import type { Opportunite, Entreprise, StatutOpportunite, OpportuniteInsert } from '../types'
 
-type SortKey = 'titre' | 'entreprise' | 'montant' | 'statut' | 'probabilite' | 'date_cloture_prevue'
+type SortKey = 'titre' | 'entreprise' | 'montant' | 'montant_pondere' | 'statut' | 'probabilite' | 'date_cloture_prevue'
 type SortDir = 'asc' | 'desc'
 
 const statutLabels: Record<StatutOpportunite, string> = {
@@ -119,6 +119,9 @@ export default function OpportunitesPage() {
       if (sortKey === 'entreprise') {
         va = entrepriseName(a.entreprise_id)
         vb = entrepriseName(b.entreprise_id)
+      } else if (sortKey === 'montant_pondere') {
+        va = (a.montant ?? 0) * ((a.probabilite ?? 0) / 100)
+        vb = (b.montant ?? 0) * ((b.probabilite ?? 0) / 100)
       } else {
         va = a[sortKey]
         vb = b[sortKey]
@@ -150,7 +153,7 @@ export default function OpportunitesPage() {
   }
 
   function SortIndicator({ column }: { column: SortKey }) {
-    if (sortKey !== column) return <span className="ml-1 text-gray-300">&udarr;</span>
+    if (sortKey !== column) return <span className="ml-1 text-gray-300">↕</span>
     return <span className="ml-1">{sortDir === 'asc' ? '▲' : '▼'}</span>
   }
 
@@ -209,6 +212,7 @@ export default function OpportunitesPage() {
                 <Th column="titre" label="Titre" toggleSort={toggleSort} indicator={<SortIndicator column="titre" />} />
                 <Th column="entreprise" label="Entreprise" toggleSort={toggleSort} indicator={<SortIndicator column="entreprise" />} />
                 <Th column="montant" label="Montant" toggleSort={toggleSort} indicator={<SortIndicator column="montant" />} />
+                <Th column="montant_pondere" label="Montant pondéré" toggleSort={toggleSort} indicator={<SortIndicator column="montant_pondere" />} />
                 <Th column="statut" label="Statut" toggleSort={toggleSort} indicator={<SortIndicator column="statut" />} />
                 <Th column="probabilite" label="Probabilité" toggleSort={toggleSort} indicator={<SortIndicator column="probabilite" />} />
                 <Th column="date_cloture_prevue" label="Clôture prévue" toggleSort={toggleSort} indicator={<SortIndicator column="date_cloture_prevue" />} />
@@ -217,7 +221,7 @@ export default function OpportunitesPage() {
             <tbody className="divide-y divide-gray-200 bg-white">
               {sorted.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-sm text-gray-500">
+                  <td colSpan={7} className="px-4 py-8 text-center text-sm text-gray-500">
                     {search || statutFilter
                       ? 'Aucune opportunité ne correspond aux critères.'
                       : 'Aucune opportunité.'}
@@ -244,6 +248,13 @@ export default function OpportunitesPage() {
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 text-sm text-right text-gray-700 tabular-nums">
                       {formatMontant(o.montant)}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 text-sm text-right text-gray-700 tabular-nums">
+                      {formatMontant(
+                        o.montant != null && o.probabilite != null
+                          ? o.montant * (o.probabilite / 100)
+                          : null,
+                      )}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 text-sm">
                       <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${statutColors[o.statut]}`}>
