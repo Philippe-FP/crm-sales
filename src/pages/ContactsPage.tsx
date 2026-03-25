@@ -80,7 +80,7 @@ export default function ContactsPage() {
   }
 
   function SortIndicator({ column }: { column: SortKey }) {
-    if (sortKey !== column) return <span className="ml-1 text-gray-300">&udarr;</span>
+    if (sortKey !== column) return null
     return <span className="ml-1">{sortDir === 'asc' ? '▲' : '▼'}</span>
   }
 
@@ -125,7 +125,7 @@ export default function ContactsPage() {
                 <Th column="entreprise" label="Entreprise" toggleSort={toggleSort} indicator={<SortIndicator column="entreprise" />} />
                 <Th column="fonction" label="Fonction" toggleSort={toggleSort} indicator={<SortIndicator column="fonction" />} />
                 <Th column="email" label="Email" toggleSort={toggleSort} indicator={<SortIndicator column="email" />} />
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Tél.</th>
+                <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium tracking-wider text-gray-500">Tél.</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 bg-white">
@@ -201,7 +201,7 @@ function Th({
 }) {
   return (
     <th
-      className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 cursor-pointer select-none hover:text-gray-900"
+      className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium tracking-wider text-gray-500 cursor-pointer select-none hover:text-gray-900"
       onClick={() => toggleSort(column)}
     >
       {label}

@@ -238,7 +238,7 @@ export default function OpportuniteDetailPage() {
         <InfoItem label="Probabilité" value={opportunite.probabilite != null ? `${opportunite.probabilite} %` : null} />
         <InfoItem label="Statut" value={statutLabels[opportunite.statut]} />
         <div>
-          <dt className="text-xs font-medium uppercase tracking-wider text-gray-500">Entreprise</dt>
+          <dt className="text-xs font-medium tracking-wider text-gray-500">Entreprise</dt>
           <dd className="mt-1 text-sm">
             {entreprise ? (
               <Link to={`/entreprises/${entreprise.id}`} className="text-blue-600 hover:text-blue-800">
@@ -250,7 +250,7 @@ export default function OpportuniteDetailPage() {
           </dd>
         </div>
         <div>
-          <dt className="text-xs font-medium uppercase tracking-wider text-gray-500">Contact principal</dt>
+          <dt className="text-xs font-medium tracking-wider text-gray-500">Contact principal</dt>
           <dd className="mt-1 text-sm">
             {contactPrincipal ? (
               <Link to={`/contacts/${contactPrincipal.id}`} className="text-blue-600 hover:text-blue-800">
@@ -299,7 +299,7 @@ export default function OpportuniteDetailPage() {
 function InfoItem({ label, value }: { label: string; value: string | null }) {
   return (
     <div>
-      <dt className="text-xs font-medium uppercase tracking-wider text-gray-500">{label}</dt>
+      <dt className="text-xs font-medium tracking-wider text-gray-500">{label}</dt>
       <dd className="mt-1 text-sm text-gray-900">
         {value ?? <span className="text-gray-400">—</span>}
       </dd>

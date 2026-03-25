@@ -85,7 +85,7 @@ export default function EntreprisesPage() {
   }
 
   function SortIndicator({ column }: { column: SortKey }) {
-    if (sortKey !== column) return <span className="ml-1 text-gray-300">&udarr;</span>
+    if (sortKey !== column) return null
     return <span className="ml-1">{sortDir === 'asc' ? '▲' : '▼'}</span>
   }
 
@@ -131,9 +131,9 @@ export default function EntreprisesPage() {
               <tr>
                 <Th column="nom" label="Nom" toggleSort={toggleSort} indicator={<SortIndicator column="nom" />} />
                 <Th column="secteur" label="Secteur" toggleSort={toggleSort} indicator={<SortIndicator column="secteur" />} />
-                <Th column="chiffre_affaires" label="CA" toggleSort={toggleSort} indicator={<SortIndicator column="chiffre_affaires" />} />
-                <Th column="effectif" label="Effectif" toggleSort={toggleSort} indicator={<SortIndicator column="effectif" />} />
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">
+                <Th column="chiffre_affaires" label="CA" toggleSort={toggleSort} indicator={<SortIndicator column="chiffre_affaires" />} align="right" />
+                <Th column="effectif" label="Effectif" toggleSort={toggleSort} indicator={<SortIndicator column="effectif" />} align="right" />
+                <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium tracking-wider text-gray-500">
                   Adresse
                 </th>
               </tr>
@@ -196,15 +196,17 @@ function Th({
   label,
   toggleSort,
   indicator,
+  align = 'left',
 }: {
   column: SortKey
   label: string
   toggleSort: (key: SortKey) => void
   indicator: React.ReactNode
+  align?: 'left' | 'right'
 }) {
   return (
     <th
-      className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 cursor-pointer select-none hover:text-gray-900"
+      className={`whitespace-nowrap px-4 py-3 text-xs font-medium tracking-wider text-gray-500 cursor-pointer select-none hover:text-gray-900 ${align === 'right' ? 'text-right' : 'text-left'}`}
       onClick={() => toggleSort(column)}
     >
       {label}
