@@ -1,30 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getEntreprises } from '../services/entreprises'
-import { getContacts } from '../services/contacts'
 import { getOpportunites } from '../services/opportunites'
 import { getActivites } from '../services/activites'
 import { updateActivite } from '../services/activites'
-import type { Opportunite, Activite, TypeActivite } from '../types'
-
-interface DashboardStats {
-  entreprises: number
-  contacts: number
-  opportunitesEnCours: number
-  montantPondere: number
-  activitesAVenir: number
-}
+import type { Opportunite, Activite, Entreprise, TypeActivite } from '../types'
 
 const STATUTS_EN_COURS = new Set(['prospection', 'qualification', 'proposition', 'negociation'])
-
-const statutLabels: Record<string, string> = {
-  prospection: 'Prospection',
-  qualification: 'Qualification',
-  proposition: 'Proposition',
-  negociation: 'Négociation',
-  gagne: 'Gagné',
-  perdu: 'Perdu',
-}
 
 const typeLabels: Record<TypeActivite, string> = {
   appel: 'Appel',
@@ -32,34 +14,6 @@ const typeLabels: Record<TypeActivite, string> = {
   reunion: 'Réunion',
   note: 'Note',
   tache: 'Tâche',
-}
-
-function computeStats(
-  entreprisesCount: number,
-  contactsCount: number,
-  opportunites: Opportunite[],
-  activites: Activite[],
-): DashboardStats {
-  const enCours = opportunites.filter((o) => STATUTS_EN_COURS.has(o.statut))
-
-  const montantPondere = enCours.reduce((sum, o) => {
-    const montant = o.montant ?? 0
-    const proba = o.probabilite ?? 0
-    return sum + montant * (proba / 100)
-  }, 0)
-
-  const today = new Date().toISOString().slice(0, 10)
-  const activitesAVenir = activites.filter(
-    (a) => !a.est_fait && a.date_echeance && a.date_echeance >= today,
-  ).length
-
-  return {
-    entreprises: entreprisesCount,
-    contacts: contactsCount,
-    opportunitesEnCours: enCours.length,
-    montantPondere,
-    activitesAVenir,
-  }
 }
 
 function formatEuros(value: number): string {
@@ -75,10 +29,24 @@ function formatDate(d: string | null): string {
   return new Date(d).toLocaleDateString('fr-FR')
 }
 
+/** Renvoie le nom du mois en français pour un objet Date */
+function monthName(date: Date): string {
+  return date.toLocaleDateString('fr-FR', { month: 'long' })
+}
+
+/** Filtre les opportunités en cours dont la clôture prévue tombe dans le mois/année donnés */
+function oppsByMonth(opps: Opportunite[], year: number, month: number): Opportunite[] {
+  return opps.filter((o) => {
+    if (!o.date_cloture_prevue || !STATUTS_EN_COURS.has(o.statut)) return false
+    const d = new Date(o.date_cloture_prevue)
+    return d.getFullYear() === year && d.getMonth() === month
+  })
+}
+
 export default function Dashboard() {
-  const [stats, setStats] = useState<DashboardStats | null>(null)
+  const [opportunites, setOpportunites] = useState<Opportunite[]>([])
+  const [entreprises, setEntreprises] = useState<Map<string, Entreprise>>(new Map())
   const [prochainesActivites, setProchainesActivites] = useState<Activite[]>([])
-  const [dernieresOpportunites, setDernieresOpportunites] = useState<Opportunite[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -87,28 +55,22 @@ export default function Dashboard() {
 
     async function load() {
       try {
-        const [entreprises, contacts, opportunites, activites] = await Promise.all([
+        const [ents, opps, activites] = await Promise.all([
           getEntreprises(),
-          getContacts(),
           getOpportunites(),
           getActivites(),
         ])
         if (!cancelled) {
-          setStats(computeStats(entreprises.length, contacts.length, opportunites, activites))
+          setOpportunites(opps)
+          setEntreprises(new Map(ents.map((e) => [e.id, e])))
 
-          // 10 prochaines activités à faire (non faites, triées par date d'échéance croissante)
+          // 10 prochaines activités à faire
           const today = new Date().toISOString().slice(0, 10)
           const prochaines = activites
             .filter((a) => !a.est_fait && a.date_echeance && a.date_echeance >= today)
             .sort((a, b) => (a.date_echeance ?? '').localeCompare(b.date_echeance ?? ''))
             .slice(0, 10)
           setProchainesActivites(prochaines)
-
-          // 5 dernières opportunités modifiées
-          const dernieres = [...opportunites]
-            .sort((a, b) => b.updated_at.localeCompare(a.updated_at))
-            .slice(0, 5)
-          setDernieresOpportunites(dernieres)
         }
       } catch (err) {
         if (!cancelled) {
@@ -130,6 +92,24 @@ export default function Dashboard() {
     )
   }
 
+  // Calculs stats
+  const enCours = opportunites.filter((o) => STATUTS_EN_COURS.has(o.statut))
+  const montantTotal = enCours.reduce((sum, o) => sum + (o.montant ?? 0), 0)
+  const montantPondere = enCours.reduce((sum, o) => {
+    return sum + (o.montant ?? 0) * ((o.probabilite ?? 0) / 100)
+  }, 0)
+
+  // Mois M, M+1, M+2
+  const now = new Date()
+  const months = [0, 1, 2].map((offset) => {
+    const d = new Date(now.getFullYear(), now.getMonth() + offset, 1)
+    return { year: d.getFullYear(), month: d.getMonth(), label: monthName(d) }
+  })
+
+  function entrepriseName(id: string): string {
+    return entreprises.get(id)?.nom ?? ''
+  }
+
   return (
     <div>
       <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
@@ -149,39 +129,27 @@ export default function Dashboard() {
           </svg>
           Chargement...
         </div>
-      ) : stats && (
+      ) : (
         <>
-          {/* Stat cards */}
-          <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            <StatCard
-              label="Entreprises"
-              value={stats.entreprises.toString()}
-              color="blue"
-              icon={<BuildingIcon />}
-            />
-            <StatCard
-              label="Contacts"
-              value={stats.contacts.toString()}
-              color="green"
-              icon={<UsersIcon />}
-            />
+          {/* 3 pavés stats */}
+          <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-3">
             <StatCard
               label="Opportunités en cours"
-              value={stats.opportunitesEnCours.toString()}
+              value={enCours.length.toString()}
               color="amber"
               icon={<CurrencyIcon />}
             />
             <StatCard
-              label="Montant pondéré"
-              value={formatEuros(stats.montantPondere)}
-              color="purple"
+              label="Montant total"
+              value={formatEuros(montantTotal)}
+              color="blue"
               icon={<ChartIcon />}
             />
             <StatCard
-              label="Activités à venir"
-              value={stats.activitesAVenir.toString()}
-              color="rose"
-              icon={<CalendarIcon />}
+              label="Montant pondéré"
+              value={formatEuros(montantPondere)}
+              color="purple"
+              icon={<ChartIcon />}
             />
           </div>
 
@@ -221,46 +189,54 @@ export default function Dashboard() {
               )}
             </div>
 
-            {/* 5 dernières opportunités modifiées */}
-            <div className="rounded-xl border border-gray-200 bg-white p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold text-gray-900">Dernières opportunités</h2>
-                <Link to="/opportunites" className="text-sm text-blue-600 hover:text-blue-800">
-                  Tout voir
-                </Link>
-              </div>
-              {dernieresOpportunites.length === 0 ? (
-                <p className="text-sm text-gray-500 py-4">Aucune opportunité.</p>
-              ) : (
-                <ul className="divide-y divide-gray-100">
-                  {dernieresOpportunites.map((o) => (
-                    <li key={o.id} className="py-3">
-                      <Link to={`/opportunites/${o.id}`} className="block hover:bg-gray-50 -mx-2 px-2 py-1 rounded">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium text-gray-900 truncate">{o.titre}</span>
-                          <span className="text-sm font-semibold text-gray-700">
-                            {o.montant != null ? formatEuros(o.montant) : '—'}
-                          </span>
+            {/* Pavés M, M+1, M+2 */}
+            <div className="space-y-6">
+              {months.map(({ year, month, label }) => {
+                const opps = oppsByMonth(opportunites, year, month)
+                const totalBrut = opps.reduce((s, o) => s + (o.montant ?? 0), 0)
+                const totalPondere = opps.reduce(
+                  (s, o) => s + (o.montant ?? 0) * ((o.probabilite ?? 0) / 100),
+                  0,
+                )
+
+                return (
+                  <div key={`${year}-${month}`} className="rounded-xl border border-gray-200 bg-white p-6">
+                    <h2 className="text-lg font-semibold text-gray-900 capitalize mb-4">
+                      Clôtures en {label}
+                    </h2>
+                    {opps.length === 0 ? (
+                      <p className="text-sm text-gray-500 py-2">Aucune opportunité prévue</p>
+                    ) : (
+                      <>
+                        <ul className="divide-y divide-gray-100">
+                          {opps.map((o) => (
+                            <li key={o.id} className="py-2.5">
+                              <Link to={`/opportunites/${o.id}`} className="block hover:bg-gray-50 -mx-2 px-2 py-1 rounded">
+                                <div className="flex items-center justify-between gap-2">
+                                  <span className="text-sm text-gray-900 truncate">
+                                    {o.titre} ({entrepriseName(o.entreprise_id)})
+                                  </span>
+                                </div>
+                                <div className="mt-1 flex items-center gap-4 text-xs text-gray-500">
+                                  <span>Brut : {formatEuros(o.montant ?? 0)}</span>
+                                  <span>Pondéré : {formatEuros((o.montant ?? 0) * ((o.probabilite ?? 0) / 100))}</span>
+                                </div>
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                        <div className="mt-3 border-t border-gray-200 pt-3 flex items-center justify-between text-sm font-semibold text-gray-700">
+                          <span>Total</span>
+                          <div className="flex gap-4 text-xs">
+                            <span>Brut : {formatEuros(totalBrut)}</span>
+                            <span>Pondéré : {formatEuros(totalPondere)}</span>
+                          </div>
                         </div>
-                        <div className="mt-1 flex items-center gap-2">
-                          <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
-                            o.statut === 'gagne'
-                              ? 'bg-green-100 text-green-700'
-                              : o.statut === 'perdu'
-                                ? 'bg-red-100 text-red-700'
-                                : 'bg-blue-100 text-blue-700'
-                          }`}>
-                            {statutLabels[o.statut]}
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            modifié le {formatDate(o.updated_at)}
-                          </span>
-                        </div>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              )}
+                      </>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           </div>
 
