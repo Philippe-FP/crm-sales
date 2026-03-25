@@ -105,13 +105,6 @@ export default function PipelineBoard({ opportunites, entreprises, onStatutChang
                 </div>
               ))}
             </div>
-
-            {/* Footer: total */}
-            <div className="border-t border-gray-200 px-3 py-2">
-              <p className="text-xs text-gray-500 tabular-nums">
-                {formatMontant(totalBrut)} / {formatMontant(totalPondere)}
-              </p>
-            </div>
           </div>
         )
       })}
