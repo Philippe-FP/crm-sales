@@ -110,7 +110,7 @@ function UtilisateursTab() {
 
       {loading ? <Spinner /> : (
         <table className="w-full text-left text-sm">
-          <thead className="border-b bg-gray-50 text-xs uppercase text-gray-500">
+          <thead className="border-b bg-gray-50 text-xs text-gray-500">
             <tr>
               <th className="px-4 py-2">Nom</th>
               <th className="px-4 py-2">Email</th>
@@ -217,7 +217,7 @@ function EntreprisesTab({ utilisateurs }: { utilisateurs: Utilisateur[] }) {
       {loading ? <Spinner /> : (
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="border-b bg-gray-50 text-xs uppercase text-gray-500">
+            <thead className="border-b bg-gray-50 text-xs text-gray-500">
               <tr>
                 <th className="px-4 py-2">Nom</th>
                 <th className="px-4 py-2">Secteur</th>
@@ -336,7 +336,7 @@ function ContactsTab({ utilisateurs, entreprises }: { utilisateurs: Utilisateur[
       {loading ? <Spinner /> : (
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="border-b bg-gray-50 text-xs uppercase text-gray-500">
+            <thead className="border-b bg-gray-50 text-xs text-gray-500">
               <tr>
                 <th className="px-4 py-2">Nom</th>
                 <th className="px-4 py-2">Fonction</th>
@@ -461,7 +461,7 @@ function OpportunitesTab({ utilisateurs, entreprises, contacts }: { utilisateurs
       {loading ? <Spinner /> : (
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="border-b bg-gray-50 text-xs uppercase text-gray-500">
+            <thead className="border-b bg-gray-50 text-xs text-gray-500">
               <tr>
                 <th className="px-4 py-2">Titre</th>
                 <th className="px-4 py-2">Entreprise</th>
@@ -597,7 +597,7 @@ function ActivitesTab({ utilisateurs, entreprises, contacts, opportunites }: { u
       {loading ? <Spinner /> : (
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="border-b bg-gray-50 text-xs uppercase text-gray-500">
+            <thead className="border-b bg-gray-50 text-xs text-gray-500">
               <tr>
                 <th className="px-4 py-2">Type</th>
                 <th className="px-4 py-2">Sujet</th>

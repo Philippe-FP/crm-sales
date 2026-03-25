@@ -160,7 +160,7 @@ export default function ContactDetailPage() {
         <InfoItem label="Email" value={contact.email} href={contact.email ? `mailto:${contact.email}` : undefined} />
         <InfoItem label="Téléphone" value={contact.telephone} href={contact.telephone ? `tel:${contact.telephone}` : undefined} />
         <div>
-          <dt className="text-xs font-medium uppercase tracking-wider text-gray-500">Entreprise</dt>
+          <dt className="text-xs font-medium tracking-wider text-gray-500">Entreprise</dt>
           <dd className="mt-1 text-sm">
             {entreprise ? (
               <Link to={`/entreprises/${entreprise.id}`} className="text-blue-600 hover:text-blue-800">
@@ -184,10 +184,10 @@ export default function ContactDetailPage() {
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Titre</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Statut</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">Montant</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500">Proba.</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium tracking-wider text-gray-500">Titre</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium tracking-wider text-gray-500">Statut</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium tracking-wider text-gray-500">Montant</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium tracking-wider text-gray-500">Proba.</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200 bg-white">
@@ -227,7 +227,7 @@ export default function ContactDetailPage() {
 function InfoItem({ label, value, href }: { label: string; value: string | null; href?: string }) {
   return (
     <div>
-      <dt className="text-xs font-medium uppercase tracking-wider text-gray-500">{label}</dt>
+      <dt className="text-xs font-medium tracking-wider text-gray-500">{label}</dt>
       <dd className="mt-1 text-sm text-gray-900">
         {value ? (
           href ? (

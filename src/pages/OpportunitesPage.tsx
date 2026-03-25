@@ -211,9 +211,9 @@ export default function OpportunitesPage() {
               <tr>
                 <Th column="titre" label="Titre" toggleSort={toggleSort} indicator={<SortIndicator column="titre" />} />
                 <Th column="entreprise" label="Entreprise" toggleSort={toggleSort} indicator={<SortIndicator column="entreprise" />} />
-                <Th column="montant" label="Montant" toggleSort={toggleSort} indicator={<SortIndicator column="montant" />} />
-                <Th column="probabilite" label="%" toggleSort={toggleSort} indicator={<SortIndicator column="probabilite" />} />
-                <Th column="montant_pondere" label="Mont. %" toggleSort={toggleSort} indicator={<SortIndicator column="montant_pondere" />} />
+                <Th column="montant" label="Montant" toggleSort={toggleSort} indicator={<SortIndicator column="montant" />} align="right" />
+                <Th column="probabilite" label="%" toggleSort={toggleSort} indicator={<SortIndicator column="probabilite" />} align="right" />
+                <Th column="montant_pondere" label="Mont. %" toggleSort={toggleSort} indicator={<SortIndicator column="montant_pondere" />} align="right" />
                 <Th column="statut" label="Statut" toggleSort={toggleSort} indicator={<SortIndicator column="statut" />} />
                 <Th column="date_cloture_prevue" label="Clôture" toggleSort={toggleSort} indicator={<SortIndicator column="date_cloture_prevue" />} />
               </tr>
@@ -309,15 +309,17 @@ function Th({
   label,
   toggleSort,
   indicator,
+  align = 'left',
 }: {
   column: SortKey
   label: string
   toggleSort: (key: SortKey) => void
   indicator: React.ReactNode
+  align?: 'left' | 'right'
 }) {
   return (
     <th
-      className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium tracking-wider text-gray-500 cursor-pointer select-none hover:text-gray-900"
+      className={`whitespace-nowrap px-4 py-3 text-xs font-medium tracking-wider text-gray-500 cursor-pointer select-none hover:text-gray-900 ${align === 'right' ? 'text-right' : 'text-left'}`}
       onClick={() => toggleSort(column)}
     >
       {label}

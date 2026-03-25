@@ -210,11 +210,11 @@ export default function ActivitesPage() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Type</th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Sujet</th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Entités liées</th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Échéance</th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Statut</th>
+                <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium tracking-wider text-gray-500">Type</th>
+                <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium tracking-wider text-gray-500">Sujet</th>
+                <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium tracking-wider text-gray-500">Entités liées</th>
+                <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium tracking-wider text-gray-500">Échéance</th>
+                <th className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium tracking-wider text-gray-500">Statut</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 bg-white">
