@@ -153,7 +153,7 @@ export default function OpportunitesPage() {
   }
 
   function SortIndicator({ column }: { column: SortKey }) {
-    if (sortKey !== column) return <span className="ml-1 text-gray-300">↕</span>
+    if (sortKey !== column) return null
     return <span className="ml-1">{sortDir === 'asc' ? '▲' : '▼'}</span>
   }
 
@@ -212,10 +212,10 @@ export default function OpportunitesPage() {
                 <Th column="titre" label="Titre" toggleSort={toggleSort} indicator={<SortIndicator column="titre" />} />
                 <Th column="entreprise" label="Entreprise" toggleSort={toggleSort} indicator={<SortIndicator column="entreprise" />} />
                 <Th column="montant" label="Montant" toggleSort={toggleSort} indicator={<SortIndicator column="montant" />} />
-                <Th column="montant_pondere" label="Montant pondéré" toggleSort={toggleSort} indicator={<SortIndicator column="montant_pondere" />} />
+                <Th column="probabilite" label="%" toggleSort={toggleSort} indicator={<SortIndicator column="probabilite" />} />
+                <Th column="montant_pondere" label="Mont. %" toggleSort={toggleSort} indicator={<SortIndicator column="montant_pondere" />} />
                 <Th column="statut" label="Statut" toggleSort={toggleSort} indicator={<SortIndicator column="statut" />} />
-                <Th column="probabilite" label="Probabilité" toggleSort={toggleSort} indicator={<SortIndicator column="probabilite" />} />
-                <Th column="date_cloture_prevue" label="Clôture prévue" toggleSort={toggleSort} indicator={<SortIndicator column="date_cloture_prevue" />} />
+                <Th column="date_cloture_prevue" label="Clôture" toggleSort={toggleSort} indicator={<SortIndicator column="date_cloture_prevue" />} />
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 bg-white">
@@ -250,6 +250,9 @@ export default function OpportunitesPage() {
                       {formatMontant(o.montant)}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 text-sm text-right text-gray-700 tabular-nums">
+                      {o.probabilite != null ? `${o.probabilite} %` : '—'}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 text-sm text-right text-gray-700 tabular-nums">
                       {formatMontant(
                         o.montant != null && o.probabilite != null
                           ? o.montant * (o.probabilite / 100)
@@ -260,9 +263,6 @@ export default function OpportunitesPage() {
                       <span className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${statutColors[o.statut]}`}>
                         {statutLabels[o.statut]}
                       </span>
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-sm text-right text-gray-700 tabular-nums">
-                      {o.probabilite != null ? `${o.probabilite} %` : '—'}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-700">
                       {formatDate(o.date_cloture_prevue)}
@@ -317,7 +317,7 @@ function Th({
 }) {
   return (
     <th
-      className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 cursor-pointer select-none hover:text-gray-900"
+      className="whitespace-nowrap px-4 py-3 text-left text-xs font-medium tracking-wider text-gray-500 cursor-pointer select-none hover:text-gray-900"
       onClick={() => toggleSort(column)}
     >
       {label}
