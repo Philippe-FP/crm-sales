@@ -62,7 +62,11 @@ export default function PipelineBoard({ opportunites, entreprises, onStatutChang
     <div className="flex gap-4 overflow-x-auto pb-4">
       {columns.map((col) => {
         const colOpps = opportunites.filter((o) => o.statut === col.statut)
-        const total = colOpps.reduce((sum, o) => sum + (o.montant ?? 0), 0)
+        const totalBrut = colOpps.reduce((sum, o) => sum + (o.montant ?? 0), 0)
+        const totalPondere = colOpps.reduce(
+          (sum, o) => sum + (o.montant ?? 0) * ((o.probabilite ?? 0) / 100),
+          0,
+        )
         const isDragOver = dragOverStatut === col.statut
 
         return (
@@ -84,6 +88,9 @@ export default function PipelineBoard({ opportunites, entreprises, onStatutChang
                   {colOpps.length}
                 </span>
               </div>
+              <p className="mt-1 text-xs text-gray-500 tabular-nums">
+                {formatMontant(totalBrut)} / {formatMontant(totalPondere)}
+              </p>
             </div>
 
             {/* Cards */}
@@ -102,7 +109,7 @@ export default function PipelineBoard({ opportunites, entreprises, onStatutChang
             {/* Footer: total */}
             <div className="border-t border-gray-200 px-3 py-2">
               <p className="text-xs text-gray-500 tabular-nums">
-                {formatMontant(total)}
+                {formatMontant(totalBrut)} / {formatMontant(totalPondere)}
               </p>
             </div>
           </div>
