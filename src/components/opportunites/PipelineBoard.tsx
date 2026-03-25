@@ -89,7 +89,7 @@ export default function PipelineBoard({ opportunites, entreprises, onStatutChang
                 </span>
               </div>
               <p className="mt-1 text-xs text-gray-500 tabular-nums">
-                {formatMontant(totalBrut)} / {formatMontant(totalPondere)}
+                {formatMontant(totalBrut)} / {formatMontant(totalPondere)}{totalBrut > 0 ? ` (${(totalPondere / totalBrut * 100).toFixed(1)}%)` : ''}
               </p>
             </div>
 
