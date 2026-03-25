@@ -41,7 +41,7 @@ export default function Sidebar() {
       </nav>
 
       <div className="p-4 border-t border-gray-800 text-xs text-gray-500">
-        CRM Sales v0.5.2
+        CRM Sales v0.6
       </div>
     </aside>
   )
