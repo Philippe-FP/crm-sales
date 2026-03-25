@@ -32,6 +32,12 @@ export default function OpportuniteCard({ opportunite, entrepriseNom, onDragStar
       <p className="mt-1 text-xs text-gray-500 truncate">{entrepriseNom}</p>
       <p className="mt-1 text-sm font-semibold text-gray-900 tabular-nums">
         {formatMontant(opportunite.montant)}
+        {' / '}
+        {formatMontant(
+          opportunite.montant != null && opportunite.probabilite != null
+            ? opportunite.montant * (opportunite.probabilite / 100)
+            : null,
+        )}
       </p>
     </div>
   )
