@@ -193,6 +193,7 @@ export default function Dashboard() {
             <div className="space-y-6">
               {months.map(({ year, month, label }) => {
                 const opps = oppsByMonth(opportunites, year, month)
+                  .sort((a, b) => (a.date_cloture_prevue ?? '').localeCompare(b.date_cloture_prevue ?? ''))
                 const totalBrut = opps.reduce((s, o) => s + (o.montant ?? 0), 0)
                 const totalPondere = opps.reduce(
                   (s, o) => s + (o.montant ?? 0) * ((o.probabilite ?? 0) / 100),
@@ -225,7 +226,7 @@ export default function Dashboard() {
                             </li>
                           ))}
                         </ul>
-                        <div className="mt-3 border-t border-gray-200 pt-3 flex items-center justify-between text-sm font-semibold text-gray-700">
+                        <div className="mt-3 border-t border-gray-200 pt-3 flex items-center gap-4 text-sm font-semibold text-gray-700">
                           <span>Total</span>
                           <div className="flex gap-4 text-xs">
                             <span>Brut : {formatEuros(totalBrut)}</span>
